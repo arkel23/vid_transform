@@ -1,12 +1,13 @@
 import cv2
 import sys, time, os, argparse
-#import sr_frame
+#from sr_frame import super_res
 
 def frame_transform_complex(frame, trans_complex):
-    if trans_complex != False:
+    if trans_complex == True:
         #frame = trans_complex(frame)
-        #frame = sr_frame.super_res(frame)
+        #frame = super_res(frame)
         pass
+        #return frame
     
 def frame_transform_simple(frame, width_new, height_new):
     dim = (width_new, height_new)
@@ -25,7 +26,7 @@ def vid_read(vid_path):
     codec = cap.get(cv2.CAP_PROP_FOURCC)
     print('Video Width: {}, Height: {}, FPS: {}, No. Frames: {}, Codec: {}.'.format(width, height, fps, no_frames, codec))
 
-    return vid_name, cap, width, height, fps, codec
+    return vid_name, cap, width, height, fps
 
 def frame_write(cap, out, f_ow, f_nw, out_dir, resize, width_new, height_new):
     
@@ -63,7 +64,7 @@ def frame_write(cap, out, f_ow, f_nw, out_dir, resize, width_new, height_new):
 
 def vid_transform(vid_path, f_ow, f_nw, width_new, height_new, fps_new, codec_new, trans_complex):
     time_start = time.time()
-    vid_name, cap, width, height, fps, codec = vid_read(vid_path)
+    vid_name, cap, width, height, fps = vid_read(vid_path)
     
     if width_new == False:
         width_new = width
@@ -75,22 +76,20 @@ def vid_transform(vid_path, f_ow, f_nw, width_new, height_new, fps_new, codec_ne
         resize = True
     if fps_new == False:
         fps_new = fps
-    if codec_new == False:
-        codec_new = codec
-    else:
-        codec_new = tuple(char.upper() for char in codec_new)
+    codec_new = tuple(char.upper() for char in codec_new)
         
     out_dir = 'results'
     os.makedirs(out_dir, exist_ok=True)
     out_name = os.path.join(out_dir, '{}_trans.avi'.format(vid_name)) 
-    #out = cv2.VideoWriter(out_name, cv2.VideoWriter_fourcc('M','J','P','G'), fps, (width, height)) #lossy but works
-    out = cv2.VideoWriter(out_name, cv2.VideoWriter_fourcc(codec_new[0], codec_new[1], codec_new[2], codec_new[3]), fps_new, (width_new, height_new)) #lossy but works
-    
-    print('Started transforming frame by frame from video.')
-    time_read_frame_cum, time_transform_cum, i = frame_write(cap, out, f_ow, f_nw, out_dir, resize, width_new, height_new)
-    print('Finished transforming video.')
-    cap.release()
-    out.release()
+
+    if trans_complex == False:
+        out_simple = cv2.VideoWriter(out_name, cv2.VideoWriter_fourcc(codec_new[0], codec_new[1], codec_new[2], codec_new[3]), fps_new, (width_new, height_new)) #lossy but works
+        
+        print('Started transforming frame by frame from video.')
+        time_read_frame_cum, time_transform_cum, i = frame_write(cap, out_simple, f_ow, f_nw, out_dir, resize, width_new, height_new)
+        print('Finished transforming video.')
+        cap.release()
+        out_simple.release()
 
     return time_start, time_read_frame_cum, time_transform_cum, i
 
@@ -108,15 +107,16 @@ def main():
     
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', required=True, dest='input', type=str, help='Input video path.')
-    parser.add_argument('-cc', required=True, dest='cc', type=str, default=False, help='Change FourCC codec of video. Def = False, and use original codec.')
-    parser.add_argument('-f_ow', required=False, dest='f_ow', type=bool, default=False, help='Save original frames.')
-    parser.add_argument('-f_nw', required=False, dest='f_nw', type=bool, default=False, help='Save processed frames.')
+    parser.add_argument('-cc', required=False, dest='cc', type=str, default='MJPG', help='Change FourCC codec of video. Def = MJPG')
+    parser.add_argument('-f_ow', required=False, dest='f_ow', type=bool, default=False, help='Save original frames. Def dont use and it wont save any frames.')
+    parser.add_argument('-f_nw', required=False, dest='f_nw', type=bool, default=False, help='Save processed frames. Def dont use and it wont save any frames.')
     parser.add_argument('-w', required=False, dest='w', type=int, default=False, help='Change width of video. Def = False, and use original width.')
     parser.add_argument('-ht', required=False, dest='h', type=int, default=False, help='Change height of video. Def = False, and use original height.')
     parser.add_argument('-fps', required=False, dest='fps', type=float, default=False, help='Change FPS of video. Def = False, and use original FPS.')
     parser.add_argument('-trans', required=False, dest='trans', type=str, default=False, help='Add any other non-standard transform. Def = False.')
     
     args = parser.parse_args()
+    print(args)
     
     time_start, time_read_frame_cum, time_transform_cum, i = vid_transform(args.input, args.f_ow, args.f_nw, args.w, args.h, args.fps, args.cc, args.trans)
     times(time_start, time_read_frame_cum, time_transform_cum, i)
