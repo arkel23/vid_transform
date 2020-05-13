@@ -28,11 +28,13 @@ def vid_read(vid_path):
 
     return vid_name, cap, width, height, fps
 
-def frame_write(cap, out, f_ow, f_nw, out_dir, resize, width_new, height_new):
+def frame_write(cap, out, f_ow, f_nw, out_dir, resize, width_new, height_new, trans_complex=False):
     
     i=0
     time_read_frame_cum = 0
     time_transform_cum = 0
+    if trans_complex == True:
+        resize=False
 
     while(cap.isOpened()):
         time_read_frame_start = time.time()
@@ -43,10 +45,14 @@ def frame_write(cap, out, f_ow, f_nw, out_dir, resize, width_new, height_new):
         time_read_frame_cum += time_read_frame_end - time_read_frame_start
         if f_ow != False:
             cv2.imwrite(os.path.join(out_dir, '{}_old.png'.format(i)), frame)
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
         time_transform_start = time.time()
         if resize == True:
             transformed_frame = frame_transform_simple(frame, width_new, height_new)
+        elif trans_complex == True:
+            #transformed_frame = frame_transform_complex(frame)
+            pass
         time_transform_end = time.time()
         time_transform_cum += time_transform_end - time_transform_start
 
@@ -82,15 +88,14 @@ def vid_transform(vid_path, f_ow, f_nw, width_new, height_new, fps_new, codec_ne
     os.makedirs(out_dir, exist_ok=True)
     out_name = os.path.join(out_dir, '{}_trans.avi'.format(vid_name)) 
 
-    if trans_complex == False:
-        out_simple = cv2.VideoWriter(out_name, cv2.VideoWriter_fourcc(codec_new[0], codec_new[1], codec_new[2], codec_new[3]), fps_new, (width_new, height_new)) #lossy but works
+    out = cv2.VideoWriter(out_name, cv2.VideoWriter_fourcc(codec_new[0], codec_new[1], codec_new[2], codec_new[3]), fps_new, (width_new, height_new)) #lossy but works
         
-        print('Started transforming frame by frame from video.')
-        time_read_frame_cum, time_transform_cum, i = frame_write(cap, out_simple, f_ow, f_nw, out_dir, resize, width_new, height_new)
-        print('Finished transforming video.')
-        cap.release()
-        out_simple.release()
-
+    print('Started transforming frame by frame from video.')
+    time_read_frame_cum, time_transform_cum, i = frame_write(cap, out, f_ow, f_nw, out_dir, resize, width_new, height_new, trans_complex)
+    print('Finished transforming video.')
+    cap.release()
+    out.release()
+    
     return time_start, time_read_frame_cum, time_transform_cum, i
 
 def times(time_start, time_read_frame_cum, time_transform_cum, i):
