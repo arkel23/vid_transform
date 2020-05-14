@@ -49,17 +49,17 @@ def frame_write(cap, out, f_ow, f_nw, out_dir, resize, width_new, height_new, tr
 
         time_transform_start = time.time()
         if resize == True:
-            transformed_frame = frame_transform_simple(frame, width_new, height_new)
+            frame = frame_transform_simple(frame, width_new, height_new)
         elif trans_complex == True:
-            #transformed_frame = frame_transform_complex(frame)
+            #frame = frame_transform_complex(frame)
             pass
         time_transform_end = time.time()
         time_transform_cum += time_transform_end - time_transform_start
 
-        #transformed_frame = cv2.cvtColor(transformed_frame, cv2.COLOR_RGB2BGR)
-        out.write(transformed_frame)
+        #frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+        out.write(frame)
         if f_nw != False:
-            cv2.imwrite(os.path.join(out_dir, '{}_new.png'.format(i)), transformed_frame)
+            cv2.imwrite(os.path.join(out_dir, '{}_new.png'.format(i)), frame)
 
         if (i%100==0):
             print('Added frame: ', i) 
