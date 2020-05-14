@@ -74,8 +74,10 @@ def vid_transform(vid_path, f_ow, f_nw, width_new, height_new, fps_new, codec_ne
     
     if width_new == False:
         width_new = width
+        resize = False
     else:
         resize = True
+        resize = False
     if height_new == False:
         height_new = height
     else:
