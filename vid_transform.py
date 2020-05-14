@@ -45,7 +45,7 @@ def frame_write(cap, out, f_ow, f_nw, out_dir, resize, width_new, height_new, tr
         time_read_frame_cum += time_read_frame_end - time_read_frame_start
         if f_ow != False:
             cv2.imwrite(os.path.join(out_dir, '{}_old.png'.format(i)), frame)
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        #frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
         time_transform_start = time.time()
         if resize == True:
