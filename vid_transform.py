@@ -1,6 +1,6 @@
 import cv2
 import sys, time, os, argparse
-#from sr_frame import super_res
+import vid_read as vid_read
 
 def frame_transform_complex(frame, trans_complex):
     if trans_complex == True:
@@ -14,19 +14,6 @@ def frame_transform_simple(frame, width_new, height_new):
     frame = cv2.resize(frame, dim, interpolation=cv2.INTER_CUBIC)
         
     return frame
-
-def vid_read(vid_path):
-    vid_name = os.path.splitext(os.path.basename(vid_path))[0]
-    cap= cv2.VideoCapture(vid_path)
-
-    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    fps = cap.get(cv2.CAP_PROP_FPS)
-    no_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    codec = cap.get(cv2.CAP_PROP_FOURCC)
-    print('Video Width: {}, Height: {}, FPS: {}, No. Frames: {}, Codec: {}.'.format(width, height, fps, no_frames, codec))
-
-    return vid_name, cap, width, height, fps
 
 def frame_write(cap, out, f_ow, f_nw, out_dir, resize, width_new, height_new, trans_complex=False):
     
@@ -70,7 +57,7 @@ def frame_write(cap, out, f_ow, f_nw, out_dir, resize, width_new, height_new, tr
 
 def vid_transform(vid_path, f_ow, f_nw, width_new, height_new, fps_new, codec_new, trans_complex):
     time_start = time.time()
-    vid_name, cap, width, height, fps = vid_read(vid_path)
+    vid_name, cap, width, height, fps = vid_read.vid_read(vid_path)
     
     if width_new == False:
         width_new = width
